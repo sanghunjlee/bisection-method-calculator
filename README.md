@@ -1,7 +1,13 @@
-# Root Calculator using the Bisection Method
-A simple program to approximate a zero from a given function using a linear approximation method.
+# Bisection Method Calculator
+The Bisection Method Calculator (BMC) approximates a zero (a root) of a given function by iterating through a number of values determined through the bisection method.
 
 ## Description
-This program will read user typed function and will attempt to find a zero using a linear approximation method. The method will recursively use the following equation until the value becomes close to zero:
-### x_{n+1} = x_n - (f(x_n) / f'(x_n+1))
-However to simplify, I will be using 
+This program will read user typed function and will attempt to find a zero using the bisection method. The method is based on the following mathematical statement:
+
+> Given a differential function *f* that stisfies *f(a) \* f(b) < 0*,
+> there must exists *x_0* such that *f(x_0) = 0*
+
+The bisection process uses the following equation to pinpoint the next *x_c* to test the condition *f(x_a) \* f(x_c) < 0* (or *f(x_c) \* f(x_b) < 0*):
+
+> *x_c = (x_a + x_b) / 2* 
+> where *x_a < x_c < x_b*
