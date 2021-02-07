@@ -6,12 +6,26 @@ MathFormula first checks if the input can be understood, and evaluates given a v
 from math import *
 
 class MathFormula(object):
-    def __init__(self, text):
-        self.formula = self.readFunc(text)
+    _formula: str
+    _variables: [str]
+    _order_of_operation: [str]
+
+    def __init__(self, user_input):
+        self.formula = self.read_function(user_input)
         self.variables = self.identifyVar()
 
-    def readFunc(self, text):
-        eq = "".join([c for c in text if c != " "])
+    @staticmethod
+    def read_function(user_input):
+        """This function will modify the given
+
+        Args:
+            user_input: string -- the function inputted by the user
+
+        Returns:
+            a string that contains cleaner function
+
+        """
+        eq = "".join([c for c in user_input if c != " "])
         result = ""
         for i in range(len(eq)):
             if i!=0 and (eq[i].isalpha() or eq[i] == "(") and (eq[i-1].isnumeric() or eq[i-1].isalpha()):
@@ -54,7 +68,7 @@ class MathFormula(object):
             result = expression
             parenthesis = "(" in result
             while parenthesis:
-                if DEBUGGING: print("Working on Parenthesis")
+                print("Working on Parenthesis")
                 splitends = result.split("(")
                 for i in range(len(splitends)):
                     if ")" in splitends[i]:
@@ -64,12 +78,12 @@ class MathFormula(object):
                         if len(splitends[i+1:]) > 0:
                             result += "(" + "(".join(splitends[i+1:])
                         break
-                if DEBUGGING: print(result)
+                print(result)
                 parenthesis = "(" in result
 
             exponents = "^" in result
             while exponents:
-                if DEBUGGING: print("Working on exponents")
+                print("Working on exponents")
                 splitends = result.split("^")
                 pre = ""
                 base = splitends[0]
@@ -93,7 +107,7 @@ class MathFormula(object):
 
             multidiv = "*" in result or "/" in result
             while multidiv:
-                if DEBUGGING: print("Working on Multi/Division")
+                print("Working on Multi/Division")
                 isMulti = True
                 for i in range(len(result)):
                     if result[i] == "*":
@@ -119,34 +133,34 @@ class MathFormula(object):
                         break
                 for i in range(len(splitends[1])):
                     if splitends[1][i] in ["+", "*", "/"]:
-                        if DEBUGGING: print(splitends[1])
+                        print(splitends[1])
                         multiplier = splitends[1][:i]
                         post = splitends[1][i:]
-                        if DEBUGGING: print(splitends[2:])
+                        print(splitends[2:])
                         if len(splitends[2:]) > 0:
                             if isMulti:
                                 post += "*" + "*".join(splitends[2:])
                             else:
                                 post += "/" + "/".join(splitends[2:])
                         break
-                if DEBUGGING: print(pre, base, multiplier, post, sep="\t|\t")
+                print(pre, base, multiplier, post, sep="\t|\t")
                 if isMulti:
                     result = pre + str((float(base) * float(multiplier))) + post
                 else:
                     result = pre + str((float(base) / float(multiplier))) + post
-                if DEBUGGING: print(result)
+                print(result)
                 multidiv = "*" in result or "/" in result
 
             adding = "+" in result
             while adding:
-                if DEBUGGING: print("Working on Addition")
+                print("Working on Addition")
                 splitends = result.split("+")
                 n = 0
                 for stuff in splitends:
                     n += float(stuff)
-                    if DEBUGGING: print(result)
+                    print(result)
                 result = str(n)
-                if DEBUGGING: print(result)
+                print(result)
                 adding = "+" in result
             return result
         if type(val_list) is not list:
