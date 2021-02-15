@@ -3,120 +3,31 @@
 MathFormula first checks if the input can be understood, and evaluates given a value.
 """
 
+__all__ = ['MathFormula']
+
 import logging
 from math import pow
 
 
-def _computation(expression):
-    result = expression
-    parenthesis = "(" in result
-    while parenthesis:
-        print("Working on Parenthesis")
-        split_ends = result.split("(")
-        for i in range(len(split_ends)):
-            if ")" in split_ends[i]:
-                split_split_ends = split_ends[i].split(")")
-                result = "(".join(split_ends[:i]) + _computation(split_split_ends[0]) + \
-                         ")".join(split_split_ends[1:])
-                if len(split_ends[i + 1:]) > 0:
-                    result += "(" + "(".join(split_ends[i + 1:])
-                break
-        print(result)
-        parenthesis = "(" in result
-
-    exponents = "^" in result
-    while exponents:
-        print("Working on exponents")
-        split_ends = result.split("^")
-        pre = ""
-        base = split_ends[0]
-        power = split_ends[1]
-        post = ""
-        for i in range(len(split_ends[0]) - 1, -1, -1):
-            if split_ends[0][i] in ["+", "*", "/"]:
-                pre = split_ends[0][:i + 1]
-                base = split_ends[0][i + 1:]
-                break
-        for i in range(len(split_ends[1])):
-            if split_ends[1][i] in ["+", "*", "/"]:
-                power = split_ends[1][:i]
-                post = split_ends[1][i:]
-                if len(split_ends[2:]) > 0:
-                    post += "^" + "^".join(split_ends[2:])
-                break
-        result = pre + str(pow(float(base), float(power))) + post
-        exponents = "^" in result
-
-    is_multi_div = "*" in result or "/" in result
-    while is_multi_div:
-        print("Working on Multi/Division")
-        is_multi = True
-        split_ends = []
-        for i in range(len(result)):
-            if result[i] == "*":
-                split_ends = result.split("*")
-                break
-            elif result[i] == "/":
-                split_ends = result.split("/")
-                is_multi = False
-                break
-
-        pre = ""
-        base = split_ends[0]
-        multiplier = split_ends[1]
-        if is_multi and len(split_ends[2:]) > 0:
-            post = "*" + "*".join(split_ends[2:])
-        elif len(split_ends[2:]) > 0:
-            post = "/" + "/".join(split_ends[2:])
-        else:
-            post = ""
-        for i in range(len(split_ends[0]) - 1, -1, -1):
-            if split_ends[0][i] in ["+", "*", "/"]:
-                pre = split_ends[0][:i + 1]
-                base = split_ends[0][i + 1:]
-                break
-        for i in range(len(split_ends[1])):
-            if split_ends[1][i] in ["+", "*", "/"]:
-                print(split_ends[1])
-                multiplier = split_ends[1][:i]
-                post = split_ends[1][i:]
-                print(split_ends[2:])
-                if len(split_ends[2:]) > 0:
-                    if is_multi:
-                        post += "*" + "*".join(split_ends[2:])
-                    else:
-                        post += "/" + "/".join(split_ends[2:])
-                break
-        print(pre, base, multiplier, post, sep="\t|\t")
-        if is_multi:
-            result = pre + str((float(base) * float(multiplier))) + post
-        else:
-            result = pre + str((float(base) / float(multiplier))) + post
-        print(result)
-        is_multi_div = "*" in result or "/" in result
-
-    adding = "+" in result
-    while adding:
-        print("Working on Addition")
-        split_ends = result.split("+")
-        n = 0
-        for stuff in split_ends:
-            n += float(stuff)
-            print(result)
-        result = str(n)
-        print(result)
-        adding = "+" in result
-    return result
+class Operator:
+    parenthesis_start = '('
+    parenthesis_end = ')'
+    exponential = '^'
+    multiplication = '*'
+    division = '/'
+    addition = '+'
+    subtraction = '-'
+    all = ['(', ')', '^', '*', '/', '+', '-']
 
 
 class MathFormula(object):
     formula: str
     variables: [str]
+    order_of_operations: [str]
 
     def __init__(self, user_input):
         self.formula = user_input
         self._simplify_formula()
-        self._identify_variable()
 
     def _simplify_formula(self):
         """This function will simplify _formula by doing the following 2 things:
@@ -126,12 +37,15 @@ class MathFormula(object):
         """
         eq = self.formula.replace(' ', '')
         result = []
+
+        # Add multiplication operator where it's implied
         for i in range(len(eq)):
+
             if i != 0 and ((eq[i].isalpha() or eq[i] == "(") and (eq[i-1].isnumeric() or eq[i-1].isalpha())):
                 result.append('*')
             result.append(eq[i])
         self.formula = ''.join(result)
-
+        self.formula = self.formula.replace('^', '**')
         logging.info(f'function: {self.formula}')
 
     def _identify_variable(self):
@@ -141,7 +55,7 @@ class MathFormula(object):
         """
         self.variables = []
         for c in self.formula:
-            if c.isalpha() and c not in self.variables:
+            if c.isalpha() and c not in self.variables and c not in ['e']:
                 self.variables.append(c)
         self.variables.sort()
         logging.info(f'variable(s): {self.variables}')
@@ -174,10 +88,12 @@ class MathFormula(object):
         if len(kwargs.keys()) != len(self.variables):
             raise IndexError("ERROR: values-to-variables mismatch")
         else:
-            expression = self._substitute_value(**kwargs)
-            for i in range(len(expression)-1, -1, -1):
-                if expression[i] == "-" and i != 0 and expression[i-1] not in ["^", "*", "/", "+"]:
-                    expression = expression[:i] + "+" + expression[i:]
-            answer = _computation(expression)
-            return float(answer)
-
+            try:
+                answer = eval(self.formula, {}, kwargs)
+                return float(answer)
+            except SyntaxError:
+                raise SyntaxError
+            except NameError:
+                raise NameError
+            except TypeError:
+                raise TypeError

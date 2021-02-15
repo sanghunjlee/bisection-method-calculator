@@ -14,20 +14,21 @@ import time
 from mathform import MathFormula
 from itercalc import BisectionMethod
 
+
 def main():
-    logging.basicConfig(filename='debug.log', level=logging.INFO)
+    logging.basicConfig(filename='debug.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%H:%M:%S')
     start_time = time.time()
-    logging.info('Log Start: ' + datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
+    logging.info('LOG START: ' + datetime.now().strftime('%Y/%m/%d'))
 
     user_input = input('Input the function: ')
     f = MathFormula(user_input)
     bm = BisectionMethod(f)
-    z = bm.find_zero(0.0, 1.0)
+    z = bm.find_zero()
     print(z)
 
     end_time = time.time()
-    logging.info(f'Runtime: {end_time - start_time}')
-    logging.info('Log End: ' + datetime.now().strftime('%Y/%m/%d %H:%M:%S'))
+    logging.info(f'LOG END: RUNTIME = {end_time - start_time}')
+
 
 if __name__ == "__main__":
     main()

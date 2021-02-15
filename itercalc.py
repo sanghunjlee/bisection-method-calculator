@@ -7,13 +7,15 @@ import logging
 from random import uniform
 from mathform import MathFormula
 
+MARGIN_OF_ERROR = 0.000000001
+
+
 class BisectionMethod(object):
     """Method used for finding zero via bisecting existing subdivision.
     
     Keyword arguments:
     _f -- math-formula.MathFunction object, that is, the function for which the zero is calculated
-    a -- start-point of the subdomain of the function on which to find the zero (default 0.0)
-    b -- endpoint of the subdomain of the function on which to find the zero (default 1.0)
+
     """
     _f: MathFormula
     is_single_variable: bool
@@ -22,9 +24,23 @@ class BisectionMethod(object):
         self._f = math_formula
         self.is_single_variable = (len(self._f.variables) == 1)
 
-    def find_zero(self, a=0.0, b=1.0) -> float:
+    def find_zero(self, a=None, b=None) -> float:
+        """
+
+        Args:
+            a: start-point of the subdomain of the function on which to find the zero (default: None)
+            b: endpoint of the subdomain of the function on which to find the zero (default: None)
+
+
+        Returns:
+
+        """
         if self.is_single_variable:
-            interval = (a, b)
+            interval = [-1.0, 1.0]
+            unbounded = True
+            if a is not None and b is not None:
+                unbounded = False
+                interval = [a, b]
             var = self._f.variables[0]
             variable_value_dict = {var: 0.0}
             points = []
@@ -32,24 +48,30 @@ class BisectionMethod(object):
             while len(points) < 2:
                 x = uniform(interval[0], interval[1])
                 variable_value_dict[var] = x
+
                 try:
                     y = self._f.evaluate(**variable_value_dict)
                 except ValueError:
                     raise ValueError('Cannot establish the starting interval')
                 print(f"for x = {x}, f(x) = {y}")
+
                 if len(points) == 0:
                     points.append((x, y))
                 elif y * points[0][1] < 0:
                     points.append((x, y))
+                else:
+                    if unbounded:
+                        interval[0] = interval[0] - (interval[1] - interval[0])
+                        interval[1] = interval[1] + (interval[1] - interval[0])
 
             for i in range(50):
                 x_b = (points[0][0] + points[1][0]) / 2
-                variable_value_dict[var] = str(x_b)
+                variable_value_dict[var] = x_b
                 try:
                     y_b = self._f.evaluate(**variable_value_dict)
                 except ValueError:
                     raise ValueError(f'Cannot evaluate such value: {x_b}')
-                if y_b == 0:
+                if y_b == 0 or abs(y_b) < MARGIN_OF_ERROR:
                     break
                 elif y_b * points[0][1] < 0:
                     points[1] = (x_b, y_b)
@@ -59,4 +81,3 @@ class BisectionMethod(object):
 
             logging.info(f"The zero of the function is: {x_b:.8}")
             return x_b
-

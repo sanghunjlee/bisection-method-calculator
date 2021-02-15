@@ -1,0 +1,9 @@
+
+21:51:18 INFO LOG START: 2021/02/14
+21:52:06 INFO function: e**(x**2-1)-20
+21:52:06 INFO variable(s): ['e', 'x']
+21:52:06 INFO LOG END: RUNTIME = 48.152549743652344
+21:53:55 INFO LOG START: 2021/02/14
+21:53:58 INFO function: math.e**(x**2-1)-20
+21:53:58 INFO variable(s): ['a', 'e', 'h', 'm', 't', 'x']
+21:53:58 INFO LOG END: RUNTIME = 3.1078174114227295
